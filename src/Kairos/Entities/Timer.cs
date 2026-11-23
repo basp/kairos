@@ -20,7 +20,7 @@ public class Timer
     public TimeSpan? Duration => 
         this.StoppedAtUtc.HasValue 
             ? this.StoppedAtUtc.Value - this.StartedAtUtc 
-            : null;
+            : DateTimeOffset.Now - this.StartedAtUtc;
     
     public Workspace Workspace { get; init; } = null!;
     
