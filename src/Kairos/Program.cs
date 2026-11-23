@@ -31,7 +31,7 @@ var app = builder.Build();
 // NOTE: For development purposes, not pat of the public API.
 app.MapPost(
     "/accounts",
-    (KairosDbContext db) =>
+    async (KairosDbContext db) =>
     {
         var resource = new Account
         {
@@ -40,8 +40,8 @@ app.MapPost(
             CreatedAt = DateTimeOffset.UtcNow,
         };
 
-        db.Accounts.Add(resource);
-        db.SaveChanges();
+        await db.Accounts.AddAsync(resource);
+        await db.SaveChangesAsync();
 
         var response = new
         {
@@ -57,12 +57,14 @@ app.MapPost(
 // NOTE: For development purposes, not pat of the public API.
 app.MapGet(
     "/accounts",
-    (KairosDbContext db) =>
+    async (KairosDbContext db) =>
     {
-        var response = db
+        var accounts = await db
             .Accounts
             .AsNoTracking()
-            .ToList()
+            .ToListAsync();
+
+        var response = accounts
             .Select(x => new
             {
                 id = x.Id,
@@ -77,15 +79,15 @@ app.MapGet(
 
 app.MapPost(
     "/workspaces",
-    (LinkGenerator links, KairosDbContext db, CreateWorkspace request) =>
+    async (LinkGenerator links, KairosDbContext db, CreateWorkspace request) =>
     {
-        var account = db
+        var account = await db
             .Accounts
-            .FirstOrDefault();
+            .FirstOrDefaultAsync();
 
         if (account is null)
         {
-            return Results.Unauthorized();
+            return Results.NotFound();
         }
 
         var workspace = new Workspace
@@ -94,8 +96,8 @@ app.MapPost(
             AccountId = account.Id,
         };
 
-        db.Workspaces.Add(workspace);
-        db.SaveChanges();
+        await db.Workspaces.AddAsync(workspace);
+        await db.SaveChangesAsync();
 
         var response = new
         {
@@ -117,13 +119,18 @@ app.MapPost(
 
 app.MapGet(
         "/workspaces",
-        (KairosDbContext db) =>
+        async (KairosDbContext db) =>
         {
-            var account = db
+            var account = await db
                 .Accounts
                 .Include(x => x.Workspaces)
                 .AsNoTracking()
-                .First();
+                .FirstOrDefaultAsync();
+
+            if (account is null)
+            {
+                return Results.NotFound();
+            }
 
             var response = account
                 .Workspaces
@@ -141,9 +148,9 @@ app.MapGet(
 
 app.MapGet(
         "/workspaces/{workspaceId:guid}",
-        (KairosDbContext db, Guid workspaceId) =>
+        async (KairosDbContext db, Guid workspaceId) =>
         {
-            var response = db
+            var response = await db
                 .Workspaces
                 .Where(x => x.Id == workspaceId)
                 .Include(x => x.Timers)
@@ -154,15 +161,17 @@ app.MapGet(
                     name = x.Name,
                     created_at = x.CreatedAt
                 })
-                .First();
+                .FirstOrDefaultAsync();
 
-            return Results.Ok(response);
+            return response is null
+                ? Results.NotFound()
+                : Results.Ok(response);
         })
     .WithName("GetWorkspace");
 
 app.MapPost(
     "/workspaces/{workspaceId:guid}/timers",
-    (
+    async (
         LinkGenerator links,
         KairosDbContext db,
         CreateTimer request,
@@ -175,8 +184,8 @@ app.MapPost(
             WorkspaceId = workspaceId,
         };
 
-        db.Timers.Add(timer);
-        db.SaveChanges();
+        await db.Timers.AddAsync(timer);
+        await db.SaveChangesAsync();
 
         var response = new
         {
@@ -201,12 +210,11 @@ app.MapPost(
 
 app.MapGet(
         "/workspaces/{workspaceId:guid}/timers",
-        (KairosDbContext db, Guid workspaceId) =>
+        async (KairosDbContext db, Guid workspaceId) =>
         {
-            var response = db
+            var response = await db
                 .Timers
                 .Where(x => x.WorkspaceId == workspaceId)
-                .ToList()
                 .Select(x => new
                 {
                     id = x.Id,
@@ -217,7 +225,7 @@ app.MapGet(
                     duration = x.Duration,
                     workspace_id = x.WorkspaceId,
                 })
-                .ToArray();
+                .ToListAsync();
 
             return Results.Ok(response);
         })
@@ -229,7 +237,9 @@ app.MapGet(
         {
             var timer = db
                 .Timers
-                .First(x => x.Id == timerId && x.WorkspaceId == workspaceId);
+                .First(x => 
+                    x.Id == timerId && 
+                    x.WorkspaceId == workspaceId);
 
             var response = new
             {
@@ -247,8 +257,8 @@ app.MapGet(
 app.MapPost(
     "/workspaces/{workspaceId:guid}/timers/{timerId:guid}/start",
     (
-        KairosDbContext db, 
-        Guid workspaceId, 
+        KairosDbContext db,
+        Guid workspaceId,
         Guid timerId) =>
     {
         var timer = db
@@ -273,8 +283,8 @@ app.MapPost(
 app.MapPost(
     "/workspaces/{workspaceId:guid}/timers/{timerId:guid}/stop",
     (
-        KairosDbContext db, 
-        Guid workspaceId, 
+        KairosDbContext db,
+        Guid workspaceId,
         Guid timerId) =>
     {
         var timer = db
