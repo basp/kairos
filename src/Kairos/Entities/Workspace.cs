@@ -16,9 +16,9 @@ public class Workspace
     
     public Account Account { get; init; } = null!;
     
-    public ICollection<Timer> Timers { get; set; } = 
+    public ICollection<Timer> Timers { get; init; } = 
         new List<Timer>();
     
-    public ICollection<Tag> Tags { get; set; } = 
+    public ICollection<Tag> Tags { get; init; } = 
         new List<Tag>();
 }

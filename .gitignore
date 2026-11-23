@@ -5,4 +5,9 @@ obj/
 .vscode/
 .vs/
 
+# Database schema is still evolving, ignore migrations for now.
+# TODO: Don't forget to remove this when schema is finalized for v1.
+src/Kairos/Migrations/
+
 appsettings.Development.json
+

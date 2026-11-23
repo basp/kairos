@@ -15,8 +15,6 @@ public class Tag
 
     [MaxLength(200)]
     public string Name { get; set; } = string.Empty;
-
-    public Workspace Workspace { get; set; } = null!;
     
     public ICollection<Timer> Timers { get; set; } =
         new List<Timer>();
