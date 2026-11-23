@@ -7,20 +7,22 @@ public class Timer
     public Guid Id { get; init; } = Guid.CreateVersion7();
 
     [MaxLength(200)]
-    public string? Name { get; set; }
+    public string? Name { get; init; }
     
     public Guid WorkspaceId { get; init; }
     
-    public Workspace Workspace { get; init; } = null!;
+    public DateTimeOffset StartedAtUtc { get; init; } = DateTimeOffset.UtcNow;
     
-    public DateTimeOffset StartedAtUtc { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset? StoppedAtUtc { get; set; }
     
-    public DateTimeOffset? EndedAtUtc { get; set; }
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     
     public TimeSpan? Duration => 
-        this.EndedAtUtc.HasValue 
-            ? this.EndedAtUtc.Value - this.StartedAtUtc 
+        this.StoppedAtUtc.HasValue 
+            ? this.StoppedAtUtc.Value - this.StartedAtUtc 
             : null;
+    
+    public Workspace Workspace { get; init; } = null!;
     
     public ICollection<Tag> Tags { get; init; } =
         new List<Tag>();

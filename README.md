@@ -15,7 +15,3 @@ erDiagram
     Timer }o--o{ Tag : "tagged with"
     Workspace ||--o{ Tag : "contains"
 ```
-
-## Questions
-* Should timers start running or stopped? Or should we have different endpoints/requests?
-* What kind of API do we want to filter timers by tag?

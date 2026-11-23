@@ -14,8 +14,8 @@ public class Tag
     public Guid WorkspaceId { get; init; }
 
     [MaxLength(200)]
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
     
-    public ICollection<Timer> Timers { get; set; } =
+    public ICollection<Timer> Timers { get; init; } =
         new List<Timer>();
 }
