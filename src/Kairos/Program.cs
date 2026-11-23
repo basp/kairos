@@ -233,13 +233,18 @@ app.MapGet(
 
 app.MapGet(
         "/workspaces/{workspaceId:guid}/timers/{timerId:guid}",
-        (KairosDbContext db, Guid workspaceId, Guid timerId) =>
+        async (KairosDbContext db, Guid workspaceId, Guid timerId) =>
         {
-            var timer = db
+            var timer = await db
                 .Timers
-                .First(x => 
-                    x.Id == timerId && 
+                .FirstOrDefaultAsync(x =>
+                    x.Id == timerId &&
                     x.WorkspaceId == workspaceId);
+
+            if (timer is null)
+            {
+                return Results.NotFound();
+            }
 
             var response = new
             {
@@ -256,17 +261,22 @@ app.MapGet(
 
 app.MapPost(
     "/workspaces/{workspaceId:guid}/timers/{timerId:guid}/start",
-    (
+    async (
         KairosDbContext db,
         Guid workspaceId,
         Guid timerId) =>
     {
-        var timer = db
+        var timer = await db
             .Timers
-            .First(x => x.Id == timerId && x.WorkspaceId == workspaceId);
+            .FirstOrDefaultAsync(x => x.Id == timerId && x.WorkspaceId == workspaceId);
+
+        if (timer is null)
+        {
+            return Results.NotFound();
+        }
 
         timer.StoppedAtUtc = null;
-        db.SaveChanges();
+        await db.SaveChangesAsync();
 
         var response = new
         {
@@ -282,19 +292,24 @@ app.MapPost(
 
 app.MapPost(
     "/workspaces/{workspaceId:guid}/timers/{timerId:guid}/stop",
-    (
+    async (
         KairosDbContext db,
         Guid workspaceId,
         Guid timerId) =>
     {
-        var timer = db
+        var timer = await db
             .Timers
-            .First(x => x.Id == timerId && x.WorkspaceId == workspaceId);
+            .FirstOrDefaultAsync(x => x.Id == timerId && x.WorkspaceId == workspaceId);
+
+        if (timer is null)
+        {
+            return Results.NotFound();
+        }
 
         if (!timer.StoppedAtUtc.HasValue)
         {
             timer.StoppedAtUtc = DateTimeOffset.UtcNow;
-            db.SaveChanges();
+            await db.SaveChangesAsync();
         }
 
         var response = new
