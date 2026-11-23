@@ -34,7 +34,7 @@ await using (var scope = app.Services.CreateAsyncScope())
     await db.Database.ExecuteSqlRawAsync("PRAGMA journal_mode = WAL;");
 }
 
-// NOTE: For development purposes, not pat of the public API.
+// NOTE: For development purposes, not part of the public API.
 app.MapPost(
     "/accounts",
     async (KairosDbContext db) =>
@@ -60,7 +60,7 @@ app.MapPost(
         return Results.Ok(response);
     });
 
-// NOTE: For development purposes, not pat of the public API.
+// NOTE: For development purposes, not part of the public API.
 app.MapGet(
     "/accounts",
     async (KairosDbContext db) =>
