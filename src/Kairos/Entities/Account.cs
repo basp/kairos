@@ -1,7 +1,12 @@
 ﻿namespace Kairos.Entities;
 
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
+[Index(
+    nameof(Issuer),
+    nameof(Subject),
+    IsUnique = true)]
 public class Account
 {
     public Guid Id { get; init; } = Guid.CreateVersion7();
