@@ -28,6 +28,12 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 var app = builder.Build();
 
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<KairosDbContext>();
+    await db.Database.ExecuteSqlRawAsync("PRAGMA journal_mode = WAL;");
+}
+
 // NOTE: For development purposes, not pat of the public API.
 app.MapPost(
     "/accounts",
